@@ -50,3 +50,14 @@ The project targets .NET 10 WPF, Windows x64, self-contained single-file publish
 - The calculator distributes the required usable storage across the selected RAID groups and determines the required data disks per group.
 - Total installed disks = (RAID groups × data disks per group) + hot spares.
 - The bay check includes both RAID data disks and hot-spare disks.
+
+
+## PDF Export
+- Use **EXPORT PDF** after pressing **CALCULATE STORAGE** to export the complete result.
+- The report includes camera/calculation inputs, bitrate results, storage results, and VMS RAID/bay/hot-spare results when VMS mode is active.
+- PDF generation is built into the application and does not require an external PDF package.
+
+## Theme Switching
+- Dark theme uses white text and labels, with a mouse-operable ComboBox template.
+- Light theme uses black text and labels.
+- ComboBox templates are refreshed safely when switching themes repeatedly.
