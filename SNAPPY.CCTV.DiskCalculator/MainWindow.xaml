@@ -129,7 +129,7 @@
                                     <TextBlock Text="These settings are applied to the calculated storage requirement after CALCULATE STORAGE." Style="{StaticResource SmallText}" TextWrapping="Wrap" Margin="0,5,0,8"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition/><ColumnDefinition Width="105"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" Text="Storage Bay Type" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Row="0" Grid.Column="1" x:Name="BayTypeBox" SelectionChanged="VmsStorageSetting_Changed"><ComboBoxItem Content="4-Bay"/><ComboBoxItem Content="8-Bay"/><ComboBoxItem Content="16-Bay"/><ComboBoxItem Content="24-Bay"/></ComboBox>
                                         <TextBlock Grid.Row="0" Grid.Column="2" Text="RAID System" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
@@ -140,8 +140,16 @@
                                         <TextBlock Grid.Row="1" Grid.Column="3" x:Name="VmsRaidStatusText" Text="Calculate storage first" Style="{StaticResource ValueText}" TextWrapping="Wrap"/>
                                         <TextBlock Grid.Row="2" Text="Bay Capacity" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Row="2" Grid.Column="1" x:Name="VmsBayCapacityText" Text="—" Style="{StaticResource ValueText}"/>
-                                        <TextBlock Grid.Row="2" Grid.Column="2" Text="Disk Count" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
-                                        <TextBlock Grid.Row="2" Grid.Column="3" x:Name="VmsDiskCountText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="2" Text="RAID Groups" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBox Grid.Row="2" Grid.Column="3" x:Name="RaidGroupBox" Text="1" TextChanged="VmsManualSetting_Changed" ToolTip="Number of separate RAID groups. This is manually adjustable."/>
+                                        <TextBlock Grid.Row="3" Text="Hot Spare Disks" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                        <TextBox Grid.Row="3" Grid.Column="1" x:Name="HotSpareBox" Text="0" TextChanged="VmsManualSetting_Changed" ToolTip="Additional physical disks reserved as hot spares. They do not add usable RAID capacity."/>
+                                        <TextBlock Grid.Row="3" Grid.Column="2" Text="Data Disks / Group" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="3" Grid.Column="3" x:Name="VmsDataDisksPerGroupText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="4" Text="Total Installed Disks" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="1" x:Name="VmsTotalDiskCountText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="2" Text="Free Bays" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="3" x:Name="VmsFreeBaysText" Text="—" Style="{StaticResource ValueText}"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>

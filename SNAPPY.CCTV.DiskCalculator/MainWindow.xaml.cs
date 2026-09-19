@@ -91,6 +91,8 @@ public partial class MainWindow : Window
             CalculationModeBox.SelectedIndex = 0;
             BayTypeBox.SelectedIndex = 1; // 8-Bay
             RaidTypeBox.SelectedIndex = 0; // RAID 6
+            RaidGroupBox.Text = "1";
+            HotSpareBox.Text = "0";
             _isVmsMode = false;
             UpdateArchitectureModeText();
         }
@@ -117,6 +119,12 @@ public partial class MainWindow : Window
     }
 
     private void VmsStorageSetting_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_isLoaded || _isUpdating) return;
+        ClearCalculatedVmsDetailsOnly();
+    }
+
+    private void VmsManualSetting_Changed(object sender, TextChangedEventArgs e)
     {
         if (!_isLoaded || _isUpdating) return;
         ClearCalculatedVmsDetailsOnly();
@@ -234,7 +242,9 @@ public partial class MainWindow : Window
     {
         string bayType = GetSelected(BayTypeBox);
         string raidType = GetSelected(RaidTypeBox);
-        VmsStorageResult vms = CalculatorService.CalculateVmsStorage(requiredTb, diskTb, bayType, raidType);
+        int raidGroups = Math.Max(1, GetInt(RaidGroupBox.Text, 1));
+        int hotSpares = Math.Max(0, GetInt(HotSpareBox.Text, 0));
+        VmsStorageResult vms = CalculatorService.CalculateVmsStorage(requiredTb, diskTb, bayType, raidType, raidGroups, hotSpares);
         DisplayVmsStorage(vms);
     }
 
@@ -242,15 +252,21 @@ public partial class MainWindow : Window
     {
         VmsRequiredUsableText.Text = $"{vms.RequiredUsableTb:N2} TB";
         VmsBayCapacityText.Text = $"{vms.BayCount}-Bay • {vms.DiskSizeTb:N0} TB/disk";
-        VmsDiskCountText.Text = $"{vms.RequiredDiskCount} / {vms.BayCount} bays";
+        VmsDiskCountText.Text = $"{vms.RequiredDiskCount} data / {vms.BayCount} bays";
+        VmsDataDisksPerGroupText.Text = vms.DisksPerRaidGroup.ToString(CultureInfo.InvariantCulture);
+        VmsTotalDiskCountText.Text = vms.TotalInstalledDiskCount.ToString(CultureInfo.InvariantCulture);
+        VmsFreeBaysText.Text = vms.FreeBays.ToString(CultureInfo.InvariantCulture);
         VmsRaidStatusText.Text = vms.FitsInBays ? "Fits" : "Not enough bays";
 
-        ArchitectureText.Text = $"VMS Storage: {vms.RaidType} on {vms.BayType} • {vms.RequiredDiskCount} × {vms.DiskSizeTb:N0} TB disk(s) required.";
+        ArchitectureText.Text = $"VMS Storage: {vms.RaidType} • {vms.RaidGroupCount} RAID group(s) × {vms.DisksPerRaidGroup} data disk(s) + {vms.HotSpareCount} hot spare(s) = {vms.TotalInstalledDiskCount} installed disk(s).";
         VmsRaidDetailsText.Text =
             $"Required usable: {vms.RequiredUsableTb:N2} TB\n" +
-            $"Raw installed capacity: {vms.RawCapacityTb:N2} TB\n" +
+            $"RAID groups: {vms.RaidGroupCount} × {vms.DisksPerRaidGroup} data disks\n" +
+            $"Hot spare disks: {vms.HotSpareCount} (manual)\n" +
+            $"Raw data-disk capacity: {vms.RawCapacityTb:N2} TB\n" +
             $"RAID usable capacity: {vms.UsableCapacityTb:N2} TB\n" +
             $"Unused usable capacity: {vms.UnusedUsableTb:N2} TB\n" +
+            $"Total installed disks: {vms.TotalInstalledDiskCount}\n" +
             $"Capacity rule: {vms.CapacityFormula}\n" +
             $"Fault tolerance: {vms.FaultTolerance}\n" +
             vms.StatusText;
@@ -278,6 +294,9 @@ public partial class MainWindow : Window
         VmsRequiredUsableText.Text = "— TB";
         VmsBayCapacityText.Text = $"{GetSelected(BayTypeBox)} • {GetSelected(DiskBox)} TB/disk";
         VmsDiskCountText.Text = "—";
+        VmsDataDisksPerGroupText.Text = "—";
+        VmsTotalDiskCountText.Text = "—";
+        VmsFreeBaysText.Text = "—";
         VmsRaidStatusText.Text = "Calculate storage first";
         VmsRaidDetailsText.Text = "VMS mode: RAID details will appear after CALCULATE STORAGE.";
         if (_isVmsMode)
