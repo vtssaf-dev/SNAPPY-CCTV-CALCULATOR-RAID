@@ -42,3 +42,11 @@ The smart bitrate model is a planning estimate. Actual camera bitrate, VMS behav
 ## Build
 
 The project targets .NET 10 WPF, Windows x64, self-contained single-file publishing, with Windows 10 1809 as the minimum platform version.
+
+## VMS RAID Group & Hot Spare
+- RAID Groups: manually adjustable number of separate RAID groups.
+- Hot Spare Disks: manually adjustable additional physical disks reserved for hot spare use.
+- Hot spares do not contribute to RAID usable capacity.
+- The calculator distributes the required usable storage across the selected RAID groups and determines the required data disks per group.
+- Total installed disks = (RAID groups × data disks per group) + hot spares.
+- The bay check includes both RAID data disks and hot-spare disks.
