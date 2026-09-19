@@ -36,6 +36,10 @@ public sealed record VmsStorageResult(
     double UnusedUsableTb,
     bool FitsInBays,
     int FreeBays,
+    int StorageDeviceCount,
+    int TotalBayCapacity,
+    int FreeBaysAcrossDevices,
+    string StorageDeviceSummary,
     string FaultTolerance,
     string CapacityFormula,
     string StatusText);
