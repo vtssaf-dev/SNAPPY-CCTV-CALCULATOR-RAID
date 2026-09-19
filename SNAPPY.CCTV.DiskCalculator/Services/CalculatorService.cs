@@ -142,9 +142,23 @@ public static class CalculatorService
         double rawCapacity = raidDataDisks * diskSizeTb;
         double usablePerGroup = GetUsableCapacityTb(disksPerGroup, diskSizeTb, raidType);
         double usableCapacity = usablePerGroup * raidGroupCount;
-        bool fits = disksPerGroup <= bayCount && totalInstalledDisks <= bayCount;
-        int freeBays = Math.Max(0, bayCount - totalInstalledDisks);
         double unused = Math.Max(0, usableCapacity - requiredUsableTb);
+
+        // Automatically size the number of physical storage chassis required.
+        // Hot spares consume bays, but do not contribute to RAID usable capacity.
+        int storageDeviceCount = Math.Max(1, (int)Math.Ceiling(totalInstalledDisks / (double)bayCount));
+        int totalBayCapacity = storageDeviceCount * bayCount;
+        int freeBaysAcrossDevices = Math.Max(0, totalBayCapacity - totalInstalledDisks);
+
+        // A RAID group must fit inside one selected chassis. If it does not,
+        // simply adding another chassis does not make that individual group valid.
+        bool raidGroupFits = disksPerGroup <= bayCount;
+        bool fits = raidGroupFits && totalInstalledDisks <= bayCount;
+        int freeBays = fits ? Math.Max(0, bayCount - totalInstalledDisks) : 0;
+
+        string storageDeviceSummary = storageDeviceCount == 1
+            ? $"1 × {bayCount}-Bay storage device"
+            : $"{storageDeviceCount} × {bayCount}-Bay storage devices";
 
         string faultTolerance = raidType switch
         {
@@ -165,17 +179,17 @@ public static class CalculatorService
         };
 
         string status;
-        if (disksPerGroup > bayCount)
+        if (!raidGroupFits)
         {
-            status = $"One RAID group needs {disksPerGroup} disks, which exceeds the {bayCount}-bay enclosure.";
+            status = $"One RAID group needs {disksPerGroup} disks, which exceeds the {bayCount}-bay enclosure. Choose a larger bay type or reduce RAID groups/disk requirement.";
         }
         else if (totalInstalledDisks > bayCount)
         {
-            status = $"RAID groups need {raidDataDisks} disks + {hotSpareCount} hot spare(s) = {totalInstalledDisks} installed disks, exceeding the {bayCount}-bay enclosure.";
+            status = $"This configuration needs {storageDeviceCount} storage device(s): {totalInstalledDisks} installed disks across {totalBayCapacity} available bays. The selected {bayCount}-bay device alone is not enough.";
         }
         else
         {
-            status = $"Fits in {bayCount}-bay storage chassis • {raidGroupCount} RAID group(s) • {disksPerGroup} disk(s)/group • {hotSpareCount} hot spare(s) • {freeBays} bay(s) remaining.";
+            status = $"Fits in 1 × {bayCount}-Bay storage device • {totalInstalledDisks} installed disk(s) • {freeBays} free bay(s).";
         }
 
         return new(
@@ -194,6 +208,10 @@ public static class CalculatorService
             unused,
             fits,
             freeBays,
+            storageDeviceCount,
+            totalBayCapacity,
+            freeBaysAcrossDevices,
+            storageDeviceSummary,
             faultTolerance,
             formula,
             status);
