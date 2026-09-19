@@ -107,7 +107,7 @@
                                 <TextBlock Grid.Row="0" Text="Recording Hours / Day" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/><TextBox Grid.Row="0" Grid.Column="1" x:Name="HoursBox" Text="24"/>
                                 <TextBlock Grid.Row="1" Text="Retention" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,10,0,0"/><TextBox Grid.Row="1" Grid.Column="1" x:Name="RetentionBox" Text="30" Margin="0,10,0,0"/>
                                 <TextBlock Grid.Row="2" Text="Retention Unit" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,10,0,0"/><ComboBox Grid.Row="2" Grid.Column="1" x:Name="RetentionUnitBox" Margin="0,10,0,0"><ComboBoxItem Content="Days"/><ComboBoxItem Content="Months"/></ComboBox>
-                                <TextBlock Grid.Row="3" Text="Disk Size (TB)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,10,0,0"/><ComboBox Grid.Row="3" Grid.Column="1" x:Name="DiskBox" Margin="0,10,0,0"/>
+                                <TextBlock Grid.Row="3" Text="Disk Size (TB)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,10,0,0"/><ComboBox Grid.Row="3" Grid.Column="1" x:Name="DiskBox" Margin="0,10,0,0" SelectionChanged="DiskBox_SelectionChanged"/>
                                 <TextBlock Grid.Row="4" Text="Storage Overhead (%)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="0,10,0,0"/><TextBox Grid.Row="4" Grid.Column="1" x:Name="OverheadBox" Text="10" Margin="0,10,0,0"/>
                             </Grid>
 
@@ -129,7 +129,7 @@
                                     <TextBlock Text="These settings are applied to the calculated storage requirement after CALCULATE STORAGE." Style="{StaticResource SmallText}" TextWrapping="Wrap" Margin="0,5,0,8"/>
                                     <Grid>
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="130"/><ColumnDefinition/><ColumnDefinition Width="105"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+                                        <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" Text="Storage Bay Type" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
                                         <ComboBox Grid.Row="0" Grid.Column="1" x:Name="BayTypeBox" SelectionChanged="VmsStorageSetting_Changed"><ComboBoxItem Content="4-Bay"/><ComboBoxItem Content="8-Bay"/><ComboBoxItem Content="16-Bay"/><ComboBoxItem Content="24-Bay"/></ComboBox>
                                         <TextBlock Grid.Row="0" Grid.Column="2" Text="RAID System" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
@@ -148,10 +148,21 @@
                                         <TextBlock Grid.Row="3" Grid.Column="3" x:Name="VmsDataDisksPerGroupText" Text="—" Style="{StaticResource ValueText}"/>
                                         <TextBlock Grid.Row="4" Text="Total Installed Disks" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Row="4" Grid.Column="1" x:Name="VmsTotalDiskCountText" Text="—" Style="{StaticResource ValueText}"/>
-                                        <TextBlock Grid.Row="4" Grid.Column="2" Text="Free Bays" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="2" Text="Free Bays (1 Device)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="3" x:Name="VmsFreeBaysText" Text="—" Style="{StaticResource ValueText}"/>
                                         <TextBlock Grid.Row="5" Text="Required Data Disks" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Row="5" Grid.Column="1" x:Name="VmsDiskCountText" Text="—" Style="{StaticResource ValueText}"/>
-                                        <TextBlock Grid.Row="4" Grid.Column="3" x:Name="VmsFreeBaysText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="5" Grid.Column="2" Text="Storage Devices Required" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="5" Grid.Column="3" x:Name="VmsStorageDeviceCountText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="6" Text="Storage Device Type" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="6" Grid.Column="1" x:Name="VmsStorageDeviceTypeText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="6" Grid.Column="2" Text="Total Available Bays" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="6" Grid.Column="3" x:Name="VmsTotalBayCapacityText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="7" Text="Free Bays (All Devices)" Style="{StaticResource FieldLabel}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="7" Grid.Column="1" x:Name="VmsFreeBaysAllText" Text="—" Style="{StaticResource ValueText}"/>
+                                        <TextBlock Grid.Row="7" Grid.Column="2" Text="Device Requirement" Style="{StaticResource FieldLabel}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        <TextBlock Grid.Row="7" Grid.Column="3" x:Name="VmsDeviceRequirementText" Text="—" Style="{StaticResource ValueText}" TextWrapping="Wrap"/>
+                                        <TextBlock Grid.Row="8" Grid.ColumnSpan="4" x:Name="VmsStorageDeviceNoteText" Text="Automatic: storage device count is calculated from total installed disks ÷ selected bay count." Style="{StaticResource SmallText}" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                     </Grid>
                                 </StackPanel>
                             </Border>
