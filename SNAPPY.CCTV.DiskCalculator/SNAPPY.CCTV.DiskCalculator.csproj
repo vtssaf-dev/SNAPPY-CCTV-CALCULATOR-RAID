@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SNAPPY.CCTV.DiskCalculator</RootNamespace>
+    <AssemblyName>SNAPPY-CCTV-Disk-Calculator</AssemblyName>
+    <ApplicationIcon>Assets\SNAPPY.ico</ApplicationIcon>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\SNAPPY-Logo-Dark.png" />
+    <Resource Include="Assets\SNAPPY-Logo-Light.png" />
+    <Resource Include="Assets\SNAPPY-Logo-Original.png" />
+    <Resource Include="Assets\SNAPPY-icon.png" />
+  </ItemGroup>
+</Project>
