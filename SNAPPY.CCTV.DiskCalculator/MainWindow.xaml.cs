@@ -396,18 +396,95 @@ public partial class MainWindow : Window
 
     private void ApplyTheme(bool dark)
     {
+        // Close any open ComboBox before replacing the theme dictionary.
+        // This prevents the old Popup/ControlTemplate from remaining attached
+        // while the new theme resources are being applied.
+        RefreshOpenComboBoxes(false);
+
         _isDark = dark;
         var dictionaries = Application.Current.Resources.MergedDictionaries;
         dictionaries.Clear();
-        dictionaries.Add(new ResourceDictionary { Source = new Uri(dark ? "Themes/DarkTheme.xaml" : "Themes/LightTheme.xaml", UriKind.Relative) });
+        dictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri(dark ? "Themes/DarkTheme.xaml" : "Themes/LightTheme.xaml", UriKind.Relative)
+        });
 
-        LogoImage.Source = new BitmapImage(new Uri(dark ? "Assets/SNAPPY-Logo-Dark.png" : "Assets/SNAPPY-Logo-Light.png", UriKind.Relative));
-        HeaderIconImage.Source = new BitmapImage(new Uri("Assets/SNAPPY-icon.png", UriKind.Relative));
+        LogoImage.Source = new BitmapImage(
+            new Uri(dark ? "Assets/SNAPPY-Logo-Dark.png" : "Assets/SNAPPY-Logo-Light.png", UriKind.Relative));
+        HeaderIconImage.Source = new BitmapImage(
+            new Uri("Assets/SNAPPY-icon.png", UriKind.Relative));
+
+        // ComboBox/TextBox use theme-specific ControlTemplates.
+        // Set a dynamic resource reference so the controls always receive
+        // the CURRENT theme style when switching Light <-> Dark repeatedly.
+        ApplyCurrentThemeStylesToControls();
 
         DarkThemeButton.Style = (Style)FindResource(dark ? "GlowButton" : "ModeButton");
         LightThemeButton.Style = (Style)FindResource(dark ? "ModeButton" : "GlowButton");
         NvrButton.Style = (Style)FindResource(_isVmsMode ? "ModeButton" : "GlowButton");
         VmsButton.Style = (Style)FindResource(_isVmsMode ? "GlowButton" : "ModeButton");
+    }
+
+    private void ApplyCurrentThemeStylesToControls()
+    {
+        foreach (object child in LogicalTreeHelper.GetChildren(this))
+        {
+            ApplyThemeStylesRecursive(child);
+        }
+    }
+
+    private void ApplyThemeStylesRecursive(object node)
+    {
+        if (node is TextBox textBox)
+        {
+            textBox.SetResourceReference(FrameworkElement.StyleProperty, typeof(TextBox));
+        }
+        else if (node is ComboBox comboBox)
+        {
+            comboBox.SetResourceReference(FrameworkElement.StyleProperty, typeof(ComboBox));
+        }
+        else if (node is Label label &&
+                 label.ReadLocalValue(FrameworkElement.StyleProperty) == DependencyProperty.UnsetValue)
+        {
+            label.SetResourceReference(FrameworkElement.StyleProperty, typeof(Label));
+        }
+        else if (node is TextBlock textBlock &&
+                 textBlock.ReadLocalValue(FrameworkElement.StyleProperty) == DependencyProperty.UnsetValue)
+        {
+            textBlock.SetResourceReference(FrameworkElement.StyleProperty, typeof(TextBlock));
+        }
+
+        if (node is DependencyObject dependencyObject)
+        {
+            foreach (object child in LogicalTreeHelper.GetChildren(dependencyObject))
+            {
+                ApplyThemeStylesRecursive(child);
+            }
+        }
+    }
+
+    private void RefreshOpenComboBoxes(bool isOpen)
+    {
+        foreach (object child in LogicalTreeHelper.GetChildren(this))
+        {
+            SetComboBoxesOpenState(child, isOpen);
+        }
+    }
+
+    private static void SetComboBoxesOpenState(object node, bool isOpen)
+    {
+        if (node is ComboBox comboBox)
+        {
+            comboBox.IsDropDownOpen = isOpen;
+        }
+
+        if (node is DependencyObject dependencyObject)
+        {
+            foreach (object child in LogicalTreeHelper.GetChildren(dependencyObject))
+            {
+                SetComboBoxesOpenState(child, isOpen);
+            }
+        }
     }
 
     private string GetCalculationMode() => GetSelected(CalculationModeBox) switch
