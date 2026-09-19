@@ -252,7 +252,7 @@ public partial class MainWindow : Window
     {
         VmsRequiredUsableText.Text = $"{vms.RequiredUsableTb:N2} TB";
         VmsBayCapacityText.Text = $"{vms.BayCount}-Bay • {vms.DiskSizeTb:N0} TB/disk";
-        VmsDiskCountText.Text = $"{vms.RequiredDiskCount} data / {vms.BayCount} bays";
+        VmsDiskCountText.Text = vms.RequiredDiskCount.ToString(CultureInfo.InvariantCulture);
         VmsDataDisksPerGroupText.Text = vms.DisksPerRaidGroup.ToString(CultureInfo.InvariantCulture);
         VmsTotalDiskCountText.Text = vms.TotalInstalledDiskCount.ToString(CultureInfo.InvariantCulture);
         VmsFreeBaysText.Text = vms.FreeBays.ToString(CultureInfo.InvariantCulture);
