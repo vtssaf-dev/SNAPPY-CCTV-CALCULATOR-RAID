@@ -106,14 +106,18 @@ public static class CalculatorService
         double requiredUsableTb,
         double diskSizeTb,
         string bayType,
-        string raidType)
+        string raidType,
+        int raidGroupCount = 1,
+        int hotSpareCount = 0)
     {
         requiredUsableTb = Math.Max(0.01, requiredUsableTb);
         diskSizeTb = Math.Max(0.1, diskSizeTb);
         int bayCount = ParseBayCount(bayType);
         raidType = NormalizeRaidType(raidType);
+        raidGroupCount = Math.Clamp(raidGroupCount, 1, Math.Max(1, bayCount));
+        hotSpareCount = Math.Clamp(hotSpareCount, 0, Math.Max(0, bayCount - 1));
 
-        int minimumDisks = raidType switch
+        int minimumDisksPerGroup = raidType switch
         {
             "RAID 1" => 2,
             "RAID 5" => 3,
@@ -122,46 +126,56 @@ public static class CalculatorService
             _ => 4
         };
 
-        int diskCount = minimumDisks;
-        while (diskCount <= 1000 && GetUsableCapacityTb(diskCount, diskSizeTb, raidType) + 1e-9 < requiredUsableTb)
+        // The required usable capacity is distributed across the manually selected RAID groups.
+        // Hot-spare disks are additional physical disks and do not contribute usable capacity.
+        double requiredPerGroup = requiredUsableTb / raidGroupCount;
+        int disksPerGroup = minimumDisksPerGroup;
+        while (disksPerGroup <= bayCount && GetUsableCapacityTb(disksPerGroup, diskSizeTb, raidType) + 1e-9 < requiredPerGroup)
         {
-            diskCount++;
-            if (raidType == "RAID 10" && diskCount % 2 != 0)
-                diskCount++;
+            disksPerGroup++;
+            if (raidType == "RAID 10" && disksPerGroup % 2 != 0)
+                disksPerGroup++;
         }
 
-        double rawCapacity = diskCount * diskSizeTb;
-        double usableCapacity = GetUsableCapacityTb(diskCount, diskSizeTb, raidType);
-        bool fits = diskCount <= bayCount;
-        int freeBays = Math.Max(0, bayCount - diskCount);
+        int raidDataDisks = disksPerGroup * raidGroupCount;
+        int totalInstalledDisks = raidDataDisks + hotSpareCount;
+        double rawCapacity = raidDataDisks * diskSizeTb;
+        double usablePerGroup = GetUsableCapacityTb(disksPerGroup, diskSizeTb, raidType);
+        double usableCapacity = usablePerGroup * raidGroupCount;
+        bool fits = disksPerGroup <= bayCount && totalInstalledDisks <= bayCount;
+        int freeBays = Math.Max(0, bayCount - totalInstalledDisks);
         double unused = Math.Max(0, usableCapacity - requiredUsableTb);
 
         string faultTolerance = raidType switch
         {
-            "RAID 1" => "1 disk can fail in a 2-disk mirror.",
-            "RAID 5" => "1 disk can fail without losing the RAID volume.",
-            "RAID 6" => "2 disks can fail without losing the RAID volume.",
-            "RAID 10" => "Disk failure protection depends on which mirror member fails; at least one disk in each mirror pair must remain healthy.",
+            "RAID 1" => "Each RAID group can tolerate 1 failed disk when the group has 2 mirrored disks.",
+            "RAID 5" => "Each RAID group can tolerate 1 failed disk without losing the RAID volume.",
+            "RAID 6" => "Each RAID group can tolerate 2 failed disks without losing the RAID volume.",
+            "RAID 10" => "Each RAID 10 group can tolerate failures provided at least one disk in every mirror pair remains healthy.",
             _ => "—"
         };
 
         string formula = raidType switch
         {
-            "RAID 1" => "Usable = 50% of raw capacity",
-            "RAID 5" => "Usable = (disk count − 1) × disk size",
-            "RAID 6" => "Usable = (disk count − 2) × disk size",
-            "RAID 10" => "Usable = (disk count ÷ 2) × disk size",
+            "RAID 1" => "Per group usable = 1 × disk size",
+            "RAID 5" => "Per group usable = (disks per group − 1) × disk size",
+            "RAID 6" => "Per group usable = (disks per group − 2) × disk size",
+            "RAID 10" => "Per group usable = (disks per group ÷ 2) × disk size",
             _ => "—"
         };
 
         string status;
-        if (fits)
+        if (disksPerGroup > bayCount)
         {
-            status = $"Fits in {bayCount}-bay storage chassis • {diskCount} disk(s) required • {freeBays} bay(s) remaining.";
+            status = $"One RAID group needs {disksPerGroup} disks, which exceeds the {bayCount}-bay enclosure.";
+        }
+        else if (totalInstalledDisks > bayCount)
+        {
+            status = $"RAID groups need {raidDataDisks} disks + {hotSpareCount} hot spare(s) = {totalInstalledDisks} installed disks, exceeding the {bayCount}-bay enclosure.";
         }
         else
         {
-            status = $"Does not fit in {bayCount}-bay storage chassis • {diskCount} disk(s) required. Increase the bay count or use another storage enclosure.";
+            status = $"Fits in {bayCount}-bay storage chassis • {raidGroupCount} RAID group(s) • {disksPerGroup} disk(s)/group • {hotSpareCount} hot spare(s) • {freeBays} bay(s) remaining.";
         }
 
         return new(
@@ -170,7 +184,11 @@ public static class CalculatorService
             raidType,
             requiredUsableTb,
             diskSizeTb,
-            diskCount,
+            raidGroupCount,
+            disksPerGroup,
+            hotSpareCount,
+            raidDataDisks,
+            totalInstalledDisks,
             rawCapacity,
             usableCapacity,
             unused,
