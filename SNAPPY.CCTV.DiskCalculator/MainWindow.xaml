@@ -170,9 +170,18 @@
                     </Border>
                 </Grid>
 
-                <Button x:Name="CalculateButton" Style="{StaticResource GlowButton}" Height="48" Margin="0,0,0,10" Click="CalculateButton_Click">
-                    <StackPanel Orientation="Horizontal"><TextBlock Text="▦" FontSize="22" Margin="0,0,10,0"/><TextBlock Text="CALCULATE STORAGE" FontSize="14" VerticalAlignment="Center"/><TextBlock Text="  »" FontSize="20" Margin="12,0,0,0" VerticalAlignment="Center"/></StackPanel>
-                </Button>
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="3*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="CalculateButton" Grid.Column="0" Style="{StaticResource GlowButton}" Height="48" Margin="0,0,6,0" Click="CalculateButton_Click">
+                        <StackPanel Orientation="Horizontal"><TextBlock Text="▦" FontSize="22" Margin="0,0,10,0"/><TextBlock Text="CALCULATE STORAGE" FontSize="14" VerticalAlignment="Center"/><TextBlock Text="  »" FontSize="20" Margin="12,0,0,0" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button x:Name="ExportPdfButton" Grid.Column="1" Style="{StaticResource ModeButton}" Height="48" Margin="6,0,0,0" Click="ExportPdfButton_Click">
+                        <StackPanel Orientation="Horizontal"><TextBlock Text="▤" FontSize="20" Margin="0,0,8,0"/><TextBlock Text="EXPORT PDF" FontSize="13" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                </Grid>
 
                 <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="0.9*"/><ColumnDefinition Width="1.1*"/></Grid.ColumnDefinitions>

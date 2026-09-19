@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 using SNAPPY.CCTV.DiskCalculator.Models;
 using SNAPPY.CCTV.DiskCalculator.Services;
 
@@ -14,6 +15,7 @@ public partial class MainWindow : Window
     private bool _isVmsMode;
     private bool _isDark = true;
     private CalculatorResult? _lastResult;
+    private VmsStorageResult? _lastVmsResult;
 
     public MainWindow()
     {
@@ -188,6 +190,67 @@ public partial class MainWindow : Window
 
     private void CalculateButton_Click(object sender, RoutedEventArgs e) => CalculateStorage();
 
+    private void ExportPdfButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_lastResult is null)
+        {
+            MessageBox.Show(
+                "Please press CALCULATE STORAGE before exporting the total result.",
+                "SNAPPY - Export PDF",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Export SNAPPY Total Result as PDF",
+            Filter = "PDF files (*.pdf)|*.pdf",
+            DefaultExt = ".pdf",
+            AddExtension = true,
+            FileName = $"SNAPPY-CCTV-Storage-Result-{DateTime.Now:yyyyMMdd-HHmmss}.pdf"
+        };
+
+        if (dialog.ShowDialog(this) != true)
+            return;
+
+        var inputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Camera Count"] = CameraCountBox.Text,
+            ["Encoding"] = GetSelected(EncodeBox),
+            ["Resolution"] = GetSelected(MpBox),
+            ["Frame Rate"] = $"{GetSelected(FpsBox)} FPS",
+            ["Bitrate Type"] = GetSelected(RateBox),
+            ["VBR Level"] = GetSelected(VbrBox),
+            ["Scene Complexity"] = GetSelected(SceneComplexityBox),
+            ["Recording Hours"] = $"{HoursBox.Text} hours/day",
+            ["Retention"] = $"{RetentionBox.Text} {GetSelected(RetentionUnitBox)}",
+            ["Disk Size"] = $"{GetSelected(DiskBox)} TB/disk",
+            ["Storage Overhead"] = $"{OverheadBox.Text}%",
+            ["System Mode"] = _isVmsMode ? "VMS" : "NVR"
+        };
+
+        try
+        {
+            PdfExportService.Export(dialog.FileName, _lastResult, _isVmsMode ? _lastVmsResult : null, inputs);
+            StatusText.Text = "PDF exported successfully";
+
+            MessageBox.Show(
+                $"Total result PDF exported successfully.\n\n{dialog.FileName}",
+                "SNAPPY - PDF Export",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                ex.Message,
+                "SNAPPY - PDF Export Error",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
+    }
+
     private void CalculateStorage()
     {
         try
@@ -269,6 +332,7 @@ public partial class MainWindow : Window
 
     private void DisplayVmsStorage(VmsStorageResult vms)
     {
+        _lastVmsResult = vms;
         VmsRequiredUsableText.Text = $"{vms.RequiredUsableTb:N2} TB";
         VmsBayCapacityText.Text = $"{vms.BayCount}-Bay • {vms.DiskSizeTb:N0} TB/disk";
         VmsDiskCountText.Text = vms.RequiredDiskCount.ToString(CultureInfo.InvariantCulture);
@@ -306,6 +370,8 @@ public partial class MainWindow : Window
 
     private void ClearStorageResult()
     {
+        _lastResult = null;
+        _lastVmsResult = null;
         RequiredTbText.Text = "— TB";
         RequiredGbText.Text = "— GB";
         PerCameraText.Text = "—";
@@ -320,6 +386,7 @@ public partial class MainWindow : Window
 
     private void ClearCalculatedVmsDetailsOnly()
     {
+        _lastVmsResult = null;
         if (!_isLoaded) return;
         VmsRequiredUsableText.Text = "— TB";
         VmsBayCapacityText.Text = $"{GetSelected(BayTypeBox)} • {GetSelected(DiskBox)} TB/disk";
@@ -414,15 +481,40 @@ public partial class MainWindow : Window
         HeaderIconImage.Source = new BitmapImage(
             new Uri("Assets/SNAPPY-icon.png", UriKind.Relative));
 
-        // ComboBox/TextBox use theme-specific ControlTemplates.
-        // Set a dynamic resource reference so the controls always receive
-        // the CURRENT theme style when switching Light <-> Dark repeatedly.
+        // Reapply the current theme style after the resource dictionary changes.
+        // This is especially important for the custom Dark ComboBox template,
+        // because its mouse toggle lives inside the template.
         ApplyCurrentThemeStylesToControls();
+        Dispatcher.BeginInvoke(new Action(RefreshComboBoxTemplates), System.Windows.Threading.DispatcherPriority.Loaded);
 
         DarkThemeButton.Style = (Style)FindResource(dark ? "GlowButton" : "ModeButton");
         LightThemeButton.Style = (Style)FindResource(dark ? "ModeButton" : "GlowButton");
         NvrButton.Style = (Style)FindResource(_isVmsMode ? "ModeButton" : "GlowButton");
         VmsButton.Style = (Style)FindResource(_isVmsMode ? "GlowButton" : "ModeButton");
+    }
+
+    private void RefreshComboBoxTemplates()
+    {
+        foreach (object child in LogicalTreeHelper.GetChildren(this))
+        {
+            RefreshComboBoxTemplatesRecursive(child);
+        }
+    }
+
+    private static void RefreshComboBoxTemplatesRecursive(object node)
+    {
+        if (node is ComboBox comboBox)
+        {
+            comboBox.IsDropDownOpen = false;
+            comboBox.InvalidateMeasure();
+            comboBox.InvalidateVisual();
+        }
+
+        if (node is DependencyObject dependencyObject)
+        {
+            foreach (object child in LogicalTreeHelper.GetChildren(dependencyObject))
+                RefreshComboBoxTemplatesRecursive(child);
+        }
     }
 
     private void ApplyCurrentThemeStylesToControls()
