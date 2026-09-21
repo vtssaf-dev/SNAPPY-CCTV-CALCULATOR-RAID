@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>SNAPPY.CCTV.DiskCalculator.Android</RootNamespace>
+    <AssemblyName>SNAPPY-CCTV-Disk-Calculator-Android</AssemblyName>
+    <ApplicationTitle>SNAPPY CCTV Disk Calculator</ApplicationTitle>
+    <ApplicationId>com.vostok.snappy.cctvdiskcalculator</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+    <MauiImage Include="Resources\Images\snappy_logo.png" />
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#06101F" BaseSize="1200,600" />
+  </ItemGroup>
+</Project>

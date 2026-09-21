@@ -1,13 +1,12 @@
-using System.Windows;
-namespace SNAPPY.CCTV.DiskCalculator;
+namespace SNAPPY.CCTV.DiskCalculator.Android;
+
 public partial class App : Application
 {
     public App()
     {
-        DispatcherUnhandledException += (_, e) =>
-        {
-            MessageBox.Show(e.Exception.ToString(), "SNAPPY - Unexpected Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            e.Handled = true;
-        };
+        InitializeComponent();
     }
+
+    protected override Window CreateWindow(IActivationState? activationState)
+        => new(new AppShell());
 }
