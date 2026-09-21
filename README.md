@@ -1,63 +1,35 @@
-# SNAPPY CCTV Disk Calculator
+# SNAPPY CCTV Disk Calculator - Android
 
-A native WPF .NET 10 Windows application for CCTV recording-storage planning.
+Android version of the SNAPPY CCTV Disk Calculator.
 
-## Calculation areas
+## Included
+- Camera count, resolution, FPS, encoding and bitrate calculation
+- Smart/manual bitrate mode
+- Retention days/months
+- Recording hours and overhead
+- VMS storage bay selection: 4/8/16/24 bay
+- RAID 1/5/6/10
+- Manual RAID groups
+- Manual hot-spare disks
+- Automatic data disks/group
+- Automatic total installed disks
+- Automatic number of storage devices required
+- Automatic free-bay calculation
+- Dark/light theme
+- Total Result PDF export using the native Android Share Sheet
+- PDF is fully closed before sharing so Save/Share apps can access it correctly
+- Proper Android launcher icon, splash screen and startup entry
 
-### NVR mode
-Calculates the basic recording storage requirement from camera count, bitrate, recording hours, retention, disk size and overhead.
+## PDF Export behavior
+Tap **EXPORT TOTAL RESULT AS PDF** after calculating storage.
+The app creates the PDF and opens the Android system Share Sheet. From there the user can save the PDF or share it to any installed compatible application such as Files, Google Drive, Gmail, WhatsApp, Quick Share, etc.
 
-### VMS mode — Storage only
-The VMS section is intentionally focused on **storage**, not server CPU/RAM/GPU specifications.
+## Build in GitHub Actions
+The included `.github/workflows/build-android.yml` installs the .NET MAUI Android workload and produces an APK artifact.
 
-After the main storage calculation, VMS calculates:
-
-- Required usable storage in TB.
-- Storage Bay Type: **4-Bay / 8-Bay / 16-Bay / 24-Bay**.
-- Disk size per drive: 2–24 TB.
-- RAID System: **RAID 6 / RAID 5 / RAID 10 / RAID 1**.
-- Required physical disk count for the selected RAID level.
-- Raw installed capacity.
-- RAID usable capacity.
-- Unused usable capacity after meeting the calculated storage requirement.
-- Free bays.
-- Whether the selected bay chassis can contain the required number of drives.
-- RAID capacity formula and basic fault-tolerance information.
-
-The RAID calculation is performed **from the calculated storage result**; it is not a separate fixed storage table.
-
-## RAID capacity rules
-
-- RAID 1: usable capacity = 1 × disk size (50% of raw for a 2-disk mirror).
-- RAID 5: usable capacity = (disk count − 1) × disk size.
-- RAID 6: usable capacity = (disk count − 2) × disk size.
-- RAID 10: usable capacity = (disk count ÷ 2) × disk size; disk count is kept even.
-
-The calculator increases the physical disk count until the RAID usable capacity meets or exceeds the calculated usable storage requirement, then checks that count against the selected bay count.
-
-## Important
-
-The smart bitrate model is a planning estimate. Actual camera bitrate, VMS behavior, RAID implementation, filesystem overhead and vendor-specific storage requirements should be validated against the actual deployment.
-
-## Build
-
-The project targets .NET 10 WPF, Windows x64, self-contained single-file publishing, with Windows 10 1809 as the minimum platform version.
-
-## VMS RAID Group & Hot Spare
-- RAID Groups: manually adjustable number of separate RAID groups.
-- Hot Spare Disks: manually adjustable additional physical disks reserved for hot spare use.
-- Hot spares do not contribute to RAID usable capacity.
-- The calculator distributes the required usable storage across the selected RAID groups and determines the required data disks per group.
-- Total installed disks = (RAID groups × data disks per group) + hot spares.
-- The bay check includes both RAID data disks and hot-spare disks.
-
-
-## PDF Export
-- Use **EXPORT PDF** after pressing **CALCULATE STORAGE** to export the complete result.
-- The report includes camera/calculation inputs, bitrate results, storage results, and VMS RAID/bay/hot-spare results when VMS mode is active.
-- PDF generation is built into the application and does not require an external PDF package.
-
-## Theme Switching
-- Dark theme uses white text and labels, with a mouse-operable ComboBox template.
-- Light theme uses black text and labels.
-- ComboBox templates are refreshed safely when switching themes repeatedly.
+## Local build
+```bash
+dotnet workload install maui-android
+dotnet restore SNAPPY.CCTV.DiskCalculator.Android/SNAPPY.CCTV.DiskCalculator.Android.csproj
+dotnet build SNAPPY.CCTV.DiskCalculator.Android/SNAPPY.CCTV.DiskCalculator.Android.csproj -c Release -f net10.0-android
+```
